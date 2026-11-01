@@ -50,7 +50,7 @@ cd agent-flight-recorder
 
 # record any command
 python recorder/recorder.py wrap --trace traces/run.jsonl -- \
-  pi --provider deepseek --model deepseek-flash -p --no-session < task.txt
+  pi --provider deepseek --model the configured model -p --no-session < task.txt
 
 # verify a trace
 python verifier/verifier.py traces/run.jsonl --expect-refusal "delete /var/log"
