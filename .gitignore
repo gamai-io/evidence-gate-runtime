@@ -1,0 +1,7 @@
+traces/
+*.jsonl
+out.json
+__pycache__/
+*.pyc
+.venv/
+.env
