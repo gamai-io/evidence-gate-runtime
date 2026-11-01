@@ -1,4 +1,4 @@
-# AFR Trace & Receipt Specification v0
+# EGR Trace & Receipt Specification v0
 
 ## 1. Trace record (one JSON object per line)
 

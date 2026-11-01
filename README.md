@@ -1,14 +1,16 @@
-# Agent Flight Recorder (AFR)
+# Evidence Gate Runtime (EGR)
+
+[![CI](https://github.com/gamai-io/evidence-gate-runtime/actions/workflows/ci.yml/badge.svg)](https://github.com/gamai-io/evidence-gate-runtime/actions/workflows/ci.yml)
 
 **Every agent action, recorded. Every claim, verified. Every run, replayable — on a laptop, on k3s, and on a EuroHPC supercomputer.**
 
-> We ran 25,600 cross-node trials of agent claims and found a **6.25% false-success rate** on probe tasks. Every single false claim was caught by an evidence gate, while read/action/cross-node tasks produced **zero** false successes. AFR turns that experiment into a product: a black box for AI agents.
+> We ran 25,600 cross-node trials of agent claims and found a **6.25% false-success rate** on probe tasks. Every single false claim was caught by an evidence gate, while read/action/cross-node tasks produced **zero** false successes. EGR turns that experiment into a product: a black box for AI agents.
 
 ## The problem
 
 Agents increasingly say *"done"* — file created, message sent, test passed, record deleted — without any verifiable artifact. In production this is worse than a crash: it is a silent lie that propagates. Regulation is catching up (EU AI Act Art. 12 requires automatic record-keeping for high-risk AI), and enterprises cannot audit what they cannot replay.
 
-## What AFR is
+## What EGR is
 
 A drop-in **recorder · verifier · replay** runtime for any agent that shells out or calls tools:
 
@@ -62,7 +64,7 @@ sbatch deploy/slurm/replay.sbatch
 
 ## Why now
 
-Agent frameworks exploded; **accountability did not**. AFR is the missing observability plane: portable, signed, replayable. It complements (not replaces) tracing tools — OpenTelemetry tells you what was called; AFR tells you whether the outcome was real.
+Agent frameworks exploded; **accountability did not**. EGR is the missing observability plane: portable, signed, replayable. It complements (not replaces) tracing tools — OpenTelemetry tells you what was called; EGR tells you whether the outcome was real.
 
 ## Roadmap
 
