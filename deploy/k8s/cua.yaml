@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cua
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cua-worker
+  namespace: cua
+data:
+  worker.py: |
+    import base64, hashlib, json, os, time, urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    VISION = os.environ.get("VISION_URL", "http://100.109.101.98:11434/api/generate")
+    VMODEL = os.environ.get("VISION_MODEL", "qwen3-vl:8b")
+    AFR = os.environ.get("AFR_URL", "http://afr-api.afr.svc.cluster.local:8080/record")
+
+    def post(url, obj, to=150):
+        req = urllib.request.Request(url, data=json.dumps(obj).encode(),
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=to) as r:
+            return json.load(r)
+
+    def ask(img_b64, prompt):
+        d = post(VISION, {"model": VMODEL, "prompt": prompt, "images": [img_b64],
+                          "stream": False, "think": False,
+                          "options": {"num_predict": 512}}, to=150)
+        return (d.get("response") or "").strip(), d.get("thinking") or ""
+
+    class H(BaseHTTPRequestHandler):
+        def _j(self, obj, code=200):
+            b = json.dumps(obj, ensure_ascii=False).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(b)))
+            self.end_headers()
+            self.wfile.write(b)
+
+        def do_GET(self):
+            if self.path == "/health":
+                return self._j({"ok": True, "model": VMODEL, "vision": VISION})
+            return self._j({"err": "not found"}, 404)
+
+        def do_POST(self):
+            if self.path != "/task":
+                return self._j({"err": "not found"}, 404)
+            n = int(self.headers.get("Content-Length", 0))
+            try:
+                body = json.loads(self.rfile.read(n) or b"{}")
+            except Exception:
+                return self._j({"ok": False, "err": "bad json"}, 400)
+            img = body.get("image_b64") or ""
+            prompt = str(body.get("prompt") or "Describe this image in one sentence.")
+            if not img:
+                return self._j({"ok": False, "err": "nema image_b64"}, 400)
+            t0 = time.time()
+            try:
+                answer, thinking = ask(img, prompt)
+            except Exception as exc:
+                return self._j({"ok": False, "err": "vision: %s" % str(exc)[:200]}, 502)
+            try:
+                raw = base64.b64decode(img)
+                sha = hashlib.sha256(raw).hexdigest()
+                size = len(raw)
+            except Exception:
+                sha, size = "", 0
+            rec = {"task": "cua: " + prompt[:200], "claim": answer,
+                   "stdout_tail": answer,
+                   "evidence": [{"kind": "image", "sha256": sha, "size": size, "ok": True}],
+                   "meta": {"model": VMODEL, "worker": os.uname().nodename,
+                            "elapsed_ms": int((time.time() - t0) * 1000)}}
+            afr = {}
+            try:
+                afr = post(AFR, rec, to=20)
+            except Exception as exc:
+                afr = {"ok": False, "err": str(exc)[:160]}
+            return self._j({"ok": True, "answer": answer, "ms": int((time.time() - t0) * 1000),
+                            "image_sha256": sha, "afr": afr})
+
+        def log_message(self, *a):
+            pass
+
+    ThreadingHTTPServer(("0.0.0.0", 8090), H).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cua-worker
+  namespace: cua
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: cua-worker}
+  template:
+    metadata:
+      labels: {app: cua-worker}
+    spec:
+      containers:
+        - name: worker
+          image: python:3.12-slim
+          command: ["python", "/app/worker.py"]
+          ports: [{containerPort: 8090}]
+          env:
+            - {name: VISION_URL, value: "http://100.109.101.98:11434/api/generate"}
+            - {name: VISION_MODEL, value: "qwen3-vl:8b"}
+            - {name: AFR_URL, value: "http://afr-api.afr.svc.cluster.local:8080/record"}
+          readinessProbe:
+            httpGet: {path: /health, port: 8090}
+            initialDelaySeconds: 3
+          volumeMounts:
+            - {name: src, mountPath: /app}
+      volumes:
+        - name: src
+          configMap: {name: cua-worker}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cua-worker
+  namespace: cua
+spec:
+  type: NodePort
+  selector: {app: cua-worker}
+  ports:
+    - port: 8090
+      targetPort: 8090
+      nodePort: 31889
