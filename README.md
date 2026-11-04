@@ -4,7 +4,7 @@
 
 **Every agent action, recorded. Every claim, verified. Every run, replayable — on a laptop, on k3s, and on a EuroHPC supercomputer.**
 
-> We ran 25,600 cross-node trials of agent claims and found a **6.25% false-success rate** on probe tasks. Every single false claim was caught by an evidence gate, while read/action/cross-node tasks produced **zero** false successes. EGR turns that experiment into a product: a black box for AI agents.
+> In a **controlled** test we ran 25,600 cross-node trials with deliberately planted liars (6.25% of probes). Every planted false claim was caught by an evidence gate, while read/action/cross-node tasks produced **zero** false successes. This is a detection-recall test, **not** a field false-success rate. EGR turns the evidence gate into a product: a black box for AI agents.
 
 ## The problem
 
@@ -37,7 +37,7 @@ A drop-in **recorder · verifier · replay** runtime for any agent that shells o
 
 ## Evidence we already have
 
-- **25,600 trials** across 8 heterogeneous nodes (Slurm), 200 runs × 16 tasks × 8 nodes: pass rate 93.75%, false-success rate 6.25%, **0 false successes** on read/action/cross tasks, all probe lies flagged (p50 2.4 ms).
+- **25,600 controlled trials** across 8 nodes (Slurm), 200 runs × 16 tasks × 8 nodes: pass rate 93.75%, planted-liar share 6.25% — **all planted lies flagged (recall)**; **0 false successes** on read/action/cross tasks. Not a field false-success rate.
 - **19,200-trial** 4-node run and **48-agent DAG** run (generated tests, deterministic verifier: 48/48 PASS).
 - **Trust layer** (sigil / guard / trust) proven on login-node CPU: invariants, immunity, false-success detection.
 - **CUA grounding eval** pipeline (v23/v25 LoRA) for visual agents.
