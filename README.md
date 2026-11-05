@@ -1,5 +1,7 @@
 # Evidence Gate Runtime (EGR)
 
+> **ProofGate Runtime v0.1:** the small installable core (claims, receipts, lite guard, MCP) is [`proofgate-runtime`](https://github.com/gamai-io/proofgate-runtime). EGR remains the fuller runtime with replay.
+
 [![CI](https://github.com/gamai-io/evidence-gate-runtime/actions/workflows/ci.yml/badge.svg)](https://github.com/gamai-io/evidence-gate-runtime/actions/workflows/ci.yml)
 
 **Every agent action, recorded. Every claim, verified. Every run, replayable — on a laptop, on k3s, and on a EuroHPC supercomputer.**
