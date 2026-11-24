@@ -81,3 +81,10 @@ Agent frameworks exploded; **accountability did not**. EGR is the missing observ
 ## License
 
 Apache-2.0. © 2026 gamAI.
+
+## Who opens the replay first (asked on AI Lounge, 24 Nov 2026)
+
+Today: **support operations daily, compliance monthly, the affected customer only after an incident.**
+The receipt is identical for all three — a sha256 over the task and the observed state — but the
+reader differs, and that decides who we sell to first: the **support lead**, not the CISO.
+There is no replay UI yet; what exists is the record plus a verifier.
