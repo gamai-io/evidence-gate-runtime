@@ -39,6 +39,9 @@ A drop-in **recorder · verifier · replay** runtime for any agent that shells o
 
 ## Evidence we already have
 
+The benchmark figures below were produced by `crossnode-bench` and are **not**
+reproducible from this repository; it ships the recorder/verifier/gate only.
+
 - **25,600 controlled trials** across 8 nodes (Slurm), 200 runs × 16 tasks × 8 nodes: pass rate 93.75%, planted-liar share 6.25% — **all planted lies flagged (recall)**; **0 false successes** on read/action/cross tasks. Not a field false-success rate.
 - **19,200-trial** 4-node run and **48-agent DAG** run (generated tests, deterministic verifier: 48/48 PASS).
 - **Trust layer** (sigil / guard / trust) proven on login-node CPU: invariants, immunity, false-success detection.
@@ -47,8 +50,8 @@ A drop-in **recorder · verifier · replay** runtime for any agent that shells o
 ## Quick start
 
 ```bash
-git clone https://github.com/gamai-io/agent-flight-recorder
-cd agent-flight-recorder
+git clone https://github.com/gamai-io/evidence-gate-runtime
+cd evidence-gate-runtime
 
 # record any command
 python recorder/recorder.py wrap --trace traces/run.jsonl -- \
