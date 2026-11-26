@@ -21,7 +21,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 KEYDIR = ROOT / "runtime" / "keys"
 LEDGER = Path(os.environ.get("AFR_LEDGER", str(ROOT / "runtime" / "ledger.jsonl")))
-EF_DIR = os.environ.get("EVIDENCE_FIRST_DIR", "~/evidence-first-agent-runtime")
+# proofgate is imported as an installed module (or whatever PYTHONPATH the
+# operator set). Earlier versions inserted $EVIDENCE_FIRST_DIR into sys.path,
+# which let an environment variable load arbitrary code into the gate.
 
 ACTION = re.compile(
     r"\b(created|made|sent|deleted|installed|wrote|uploaded|saved|"
@@ -40,8 +42,6 @@ def sha(obj: Any) -> str:
 
 
 def _proofgate():
-    if EF_DIR not in sys.path:
-        sys.path.insert(0, EF_DIR)
     try:
         from proofgate import proofgate as _m
         return _m
@@ -54,8 +54,6 @@ def _proofgate():
 
 
 def _provenance():
-    if EF_DIR not in sys.path:
-        sys.path.insert(0, EF_DIR)
     try:
         from proofgate import provenance as _m
         return _m

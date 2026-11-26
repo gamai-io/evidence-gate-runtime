@@ -104,5 +104,51 @@ class TestLedger(unittest.TestCase):
         self.assertFalse(r["ok"], r)
 
 
+class TestNoPathInjection(unittest.TestCase):
+    """An environment variable must not be able to load code into the gate."""
+
+    def test_env_dir_is_not_imported(self):
+        with tempfile.TemporaryDirectory() as td:
+            pkg = Path(td) / "proofgate"
+            pkg.mkdir()
+            (pkg / "__init__.py").write_text("raise SystemExit('injected')\n")
+            (pkg / "proofgate.py").write_text("raise SystemExit('injected')\n")
+            old = os.environ.get("EVIDENCE_FIRST_DIR")
+            os.environ["EVIDENCE_FIRST_DIR"] = td
+            try:
+                mod = gate._proofgate()      # must not raise, must not import it
+            finally:
+                if old is None:
+                    os.environ.pop("EVIDENCE_FIRST_DIR", None)
+                else:
+                    os.environ["EVIDENCE_FIRST_DIR"] = old
+                sys.modules.pop("proofgate", None)
+            self.assertTrue(mod is None or
+                            getattr(mod, "__file__", "") != str(pkg / "proofgate.py"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestNoPathInjection(unittest.TestCase):
+    """An environment variable must not be able to load code into the gate."""
+
+    def test_env_dir_is_not_imported(self):
+        with tempfile.TemporaryDirectory() as td:
+            pkg = Path(td) / "proofgate"
+            pkg.mkdir()
+            (pkg / "__init__.py").write_text("raise SystemExit('injected')\n")
+            (pkg / "proofgate.py").write_text("raise SystemExit('injected')\n")
+            old = os.environ.get("EVIDENCE_FIRST_DIR")
+            os.environ["EVIDENCE_FIRST_DIR"] = td
+            try:
+                # must not raise and must not import the planted module
+                mod = gate._proofgate()
+            finally:
+                if old is None:
+                    os.environ.pop("EVIDENCE_FIRST_DIR", None)
+                else:
+                    os.environ["EVIDENCE_FIRST_DIR"] = old
+                sys.modules.pop("proofgate", None)
+            self.assertTrue(mod is None or getattr(mod, "__file__", "") != str(pkg / "proofgate.py"))
